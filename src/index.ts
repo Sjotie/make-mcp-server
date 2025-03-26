@@ -50,18 +50,18 @@ const resultsApiUrl = process.env.RESULTS_API_URL.replace(/\/$/, '');
 const resultsApiSecretKey = process.env.RESULTS_API_SECRET_KEY;
 
 server.setRequestHandler(ListToolsRequestSchema, async () => {
-    console.log('Received request to list tools (Make scenarios)...');
+    console.error('Received request to list tools (Make scenarios)...');
     try {
         const scenarios = await make.scenarios.list(teamId);
         const onDemandScenarios = scenarios.filter(scenario => scenario.scheduling.type === 'on-demand');
-        console.log(`Found ${onDemandScenarios.length} on-demand scenarios.`);
+        console.error(`Found ${onDemandScenarios.length} on-demand scenarios.`);
 
         const tools = await Promise.all(
             onDemandScenarios.map(async scenario => {
                 try {
                     const iface = await make.scenarios.interface(scenario.id);
                     const inputs = iface.input || [];
-                    console.log(`Processing interface for scenario ID ${scenario.id}`);
+                    console.error(`Processing interface for scenario ID ${scenario.id}`);
                     return {
                         name: `run_scenario_${scenario.id}`,
                         description: scenario.name + (scenario.description ? ` (${scenario.description})` : ''),
@@ -78,7 +78,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
             }),
         );
         const validTools = tools.filter(tool => tool !== null);
-        console.log(`Returning ${validTools.length} tools.`);
+        console.error(`Returning ${validTools.length} tools.`);
         return { tools: validTools as any[] };
     } catch (error) {
         console.error('Error listing Make scenarios:', error);
@@ -91,17 +91,16 @@ server.setRequestHandler(CallToolRequestSchema, async request => {
         const scenarioIdStr = request.params.name.substring(13);
         let executionId = '';
         try {
-            console.log(`[${scenarioIdStr}] Calling Make API to run scenario...`);
+            console.error(`[${scenarioIdStr}] Calling Make API to run scenario...`);
             const runResponse: ScenarioRunServerResponse = await make.scenarios.run(
                 parseInt(scenarioIdStr),
                 request.params.arguments
             );
             executionId = runResponse.executionId;
-            console.log(`[${scenarioIdStr} / ${executionId}] Make API call successful.`);
-            console.log(`[${scenarioIdStr} / ${executionId}] Make scenario execution reported successful.`);
+            console.error(`[${scenarioIdStr} / ${executionId}] Make API call successful.`);
 
             const retrieveUrl = `${resultsApiUrl}/retrieve/${executionId}`;
-            console.log(`[${scenarioIdStr} / ${executionId}] Attempting to retrieve results from: ${retrieveUrl}`);
+            console.error(`[${scenarioIdStr} / ${executionId}] Attempting to retrieve results from: ${retrieveUrl}`);
 
             const retrieveRes = await fetch(retrieveUrl, {
                 method: 'GET',
@@ -111,7 +110,7 @@ server.setRequestHandler(CallToolRequestSchema, async request => {
                 }
             });
 
-            console.log(`[${scenarioIdStr} / ${executionId}] Result retrieval API responded with status: ${retrieveRes.status}`);
+            console.error(`[${scenarioIdStr} / ${executionId}] Result retrieval API responded with status: ${retrieveRes.status}`);
 
             if (!retrieveRes.ok) {
                 let errorDetail = await retrieveRes.text();
@@ -129,7 +128,7 @@ server.setRequestHandler(CallToolRequestSchema, async request => {
             }
 
             const retrievedData = await retrieveRes.json() as ResultsApiResponse;
-            console.log(`[${scenarioIdStr} / ${executionId}] Successfully retrieved results.`);
+            console.error(`[${scenarioIdStr} / ${executionId}] Successfully retrieved results.`);
 
             const outputContent = retrievedData.output !== undefined ? JSON.stringify(retrievedData.output, null, 2) : '(No output data received from results API)';
 
@@ -156,13 +155,13 @@ server.setRequestHandler(CallToolRequestSchema, async request => {
             throw new McpError(mcpErrorCode, errorMessage);
         }
     }
-    console.warn(`Unknown tool requested: ${request.params.name}`);
+    console.error(`Unknown tool requested: ${request.params.name}`);
     throw new McpError(ErrorCode.InvalidRequest, `Unknown tool: ${request.params.name}`);
 });
 
 const transport = new StdioServerTransport();
 server.connect(transport).then(() => {
-    console.log('Make MCP Server connected via stdio and ready.');
+    console.error('Make MCP Server connected via stdio and ready.');
 }).catch(err => {
     console.error('FATAL: Failed to connect transport:', err);
     process.exit(1);
