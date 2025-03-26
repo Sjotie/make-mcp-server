@@ -130,7 +130,16 @@ server.setRequestHandler(CallToolRequestSchema, async request => {
             const retrievedData = await retrieveRes.json() as ResultsApiResponse;
             console.error(`[${scenarioIdStr} / ${executionId}] Successfully retrieved results.`);
 
-            const outputContent = retrievedData.output !== undefined ? JSON.stringify(retrievedData.output, null, 2) : '(No output data received from results API)';
+            let outputContent: string;
+            if (retrievedData.output === undefined || retrievedData.output === null) {
+                outputContent = '(No output data received from results API)';
+            } else if (typeof retrievedData.output === 'string') {
+                // If the output from results API is already a string, use it directly
+                outputContent = retrievedData.output;
+            } else {
+                // Otherwise (object, array, number, boolean), stringify it
+                outputContent = JSON.stringify(retrievedData.output, null, 2);
+            }
 
             return {
                 toolResult: outputContent,
