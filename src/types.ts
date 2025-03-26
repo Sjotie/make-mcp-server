@@ -34,5 +34,11 @@ export type ScenarioInterfaceServerResponse = {
 
 export type ScenarioRunServerResponse = {
     executionId: string;
-    outputs: unknown;
+    status?: string;
+    outputs?: unknown;
+};
+
+export type ResultsApiResponse = {
+    executionId: string;
+    output: unknown;
 };
