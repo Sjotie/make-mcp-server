@@ -78,7 +78,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
         return { tools: validTools as any[] };
     } catch (error) {
         console.error('Error listing Make scenarios:', error);
-        throw new McpError(ErrorCode.OperationFailed, `Failed to list Make scenarios: ${String(error)}`);
+        throw new McpError(ErrorCode.InternalError, `Failed to list Make scenarios: ${String(error)}`);
     }
 });
 
@@ -97,7 +97,7 @@ server.setRequestHandler(CallToolRequestSchema, async request => {
             console.log(`[${scenarioIdStr} / ${executionId}] Make API response received. Status: ${makeInternalStatus || 'N/A'}`);
 
             if (makeInternalStatus !== 'COMPLETED' && makeInternalStatus !== 'OK') {
-                throw new McpError(ErrorCode.ToolCallFailed, `Make scenario execution failed internally with status: ${makeInternalStatus || 'Unknown'}. Execution ID: ${executionId}`);
+                throw new McpError(ErrorCode.InternalError, `Make scenario execution failed internally with status: ${makeInternalStatus || 'Unknown'}. Execution ID: ${executionId}`);
             }
             console.log(`[${scenarioIdStr} / ${executionId}] Make scenario execution reported successful.`);
 
@@ -123,10 +123,10 @@ server.setRequestHandler(CallToolRequestSchema, async request => {
 
                 if (retrieveRes.status === 404) {
                     console.warn(`[${scenarioIdStr} / ${executionId}] Result retrieval failed: 404 Not Found.`);
-                    throw new McpError(ErrorCode.ToolCallFailed, `Failed to retrieve results for execution ID ${executionId}: Result not found or expired (404). Detail: ${errorDetail}`);
+                    throw new McpError(ErrorCode.InternalError, `Failed to retrieve results for execution ID ${executionId}: Result not found or expired (404). Detail: ${errorDetail}`);
                 }
                 console.error(`[${scenarioIdStr} / ${executionId}] Result retrieval failed: Status ${retrieveRes.status}. Detail: ${errorDetail}`);
-                throw new McpError(ErrorCode.ToolCallFailed, `Failed to retrieve results for execution ID ${executionId}. Status: ${retrieveRes.status}. Detail: ${errorDetail}`);
+                throw new McpError(ErrorCode.InternalError, `Failed to retrieve results for execution ID ${executionId}. Status: ${retrieveRes.status}. Detail: ${errorDetail}`);
             }
 
             const retrievedData = await retrieveRes.json() as ResultsApiResponse;
@@ -153,12 +153,12 @@ server.setRequestHandler(CallToolRequestSchema, async request => {
                 errorMessage += ` (Make Execution ID: ${executionId})`;
             }
 
-            const mcpErrorCode = (err instanceof McpError) ? err.code : ErrorCode.ToolCallFailed;
+            const mcpErrorCode = (err instanceof McpError) ? err.code : ErrorCode.InternalError;
             throw new McpError(mcpErrorCode, errorMessage);
         }
     }
     console.warn(`Unknown tool requested: ${request.params.name}`);
-    throw new McpError(ErrorCode.ToolNotFound, `Unknown tool: ${request.params.name}`);
+    throw new McpError(ErrorCode.NotFound, `Unknown tool: ${request.params.name}`);
 });
 
 const transport = new StdioServerTransport();
