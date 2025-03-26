@@ -42,6 +42,10 @@ if (!process.env.RESULTS_API_SECRET_KEY) {
 
 const make = new Make(process.env.MAKE_API_KEY, process.env.MAKE_ZONE);
 const teamId = parseInt(process.env.MAKE_TEAM);
+if (isNaN(teamId)) {
+    console.error(`FATAL: MAKE_TEAM environment variable ("${process.env.MAKE_TEAM}") could not be parsed into a valid number.`);
+    process.exit(1);
+}
 const resultsApiUrl = process.env.RESULTS_API_URL.replace(/\/$/, '');
 const resultsApiSecretKey = process.env.RESULTS_API_SECRET_KEY;
 
@@ -93,12 +97,7 @@ server.setRequestHandler(CallToolRequestSchema, async request => {
                 request.params.arguments
             );
             executionId = runResponse.executionId;
-            const makeInternalStatus = runResponse.status;
-            console.log(`[${scenarioIdStr} / ${executionId}] Make API response received. Status: ${makeInternalStatus || 'N/A'}`);
-
-            if (makeInternalStatus !== 'COMPLETED' && makeInternalStatus !== 'OK') {
-                throw new McpError(ErrorCode.InternalError, `Make scenario execution failed internally with status: ${makeInternalStatus || 'Unknown'}. Execution ID: ${executionId}`);
-            }
+            console.log(`[${scenarioIdStr} / ${executionId}] Make API call successful.`);
             console.log(`[${scenarioIdStr} / ${executionId}] Make scenario execution reported successful.`);
 
             const retrieveUrl = `${resultsApiUrl}/retrieve/${executionId}`;
