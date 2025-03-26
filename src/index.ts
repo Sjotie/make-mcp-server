@@ -158,7 +158,7 @@ server.setRequestHandler(CallToolRequestSchema, async request => {
         }
     }
     console.warn(`Unknown tool requested: ${request.params.name}`);
-    throw new McpError(ErrorCode.NotFound, `Unknown tool: ${request.params.name}`);
+    throw new McpError(ErrorCode.InvalidRequest, `Unknown tool: ${request.params.name}`);
 });
 
 const transport = new StdioServerTransport();
