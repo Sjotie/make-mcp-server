@@ -38,7 +38,10 @@ To use this server with the Claude Desktop app, add the following configuration 
             "env": {
                 "MAKE_API_KEY": "<your-api-key>",
                 "MAKE_ZONE": "<your-zone>",
-                "MAKE_TEAM": "<your-team-id>"
+                "MAKE_TEAM": "<your-team-id>",
+                "RESULTS_API_URL": "https://makemcp...",
+                "RESULTS_API_SECRET_KEY": "<secret-key>"
+
             }
         }
     }
