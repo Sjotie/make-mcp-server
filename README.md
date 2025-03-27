@@ -34,7 +34,7 @@ To use this server with the Claude Desktop app, add the following configuration 
     "mcpServers": {
         "make": {
             "command": "npx",
-            "args": ["-y", "@makehq/mcp-server"],
+            "args": ["-y", "@sjotie/make-mcp-server"],
             "env": {
                 "MAKE_API_KEY": "<your-api-key>",
                 "MAKE_ZONE": "<your-zone>",
